@@ -9,6 +9,8 @@ describe('Central de Atendimento ao Cliente TAT', () => {
   })
 
   it('prenche os campos obrigatórios e envia o formulário', () => {
+    cy.clock() 
+    
     const longText = Cypress._.repeat('abcdfghij', 15)
     cy.get('#firstName').type('Jonas', {delay: 50})
     cy.get('#lastName').type('Américo')
@@ -17,6 +19,9 @@ describe('Central de Atendimento ao Cliente TAT', () => {
     cy.contains('button', 'Enviar').click()
     
     cy.get('.success').should('be.visible')
+
+    cy.tick(3000)
+    cy.get('.success').should('not.be.visible')
   })
 
   it('Exibe mensagem de erro ao submeter o formulário com um email com formatação inválida', () => {
@@ -196,10 +201,51 @@ describe('Central de Atendimento ao Cliente TAT', () => {
     
   })
 
+  it('exibe e oculta as mensagens de sucesso e erro usando .invoke()', () => {
+  cy.get('.success')
+    .should('not.be.visible')
+    .invoke('show')
+    .should('be.visible')
+    .and('contain', 'Mensagem enviada com sucesso.')
+    .invoke('hide')
+    .should('not.be.visible')
+  cy.get('.error')
+    .should('not.be.visible')
+    .invoke('show')
+    .should('be.visible')
+    .and('contain', 'Valide os campos obrigatórios!')
+    .invoke('hide')
+    .should('not.be.visible')
+})
 
+  it('Preenche o campo  da área de texto usando o comando invoke ', () => {
+  cy.get('#open-text-area')
+    .invoke('val', 'Um texto qualquer')
+    .should('have.value', 'Um texto qualquer')
+})
 
+  it('Faz uma requisição HTTP', () => {
+    cy.request('https://cac-tat-v3.s3.eu-central-1.amazonaws.com/index.html')
+      .as('getRequest')
+      .its('status')
+      .should('be.equal', 200)
+    cy.get('@getRequest')  
+      .its('statusText')
+      .should('be.equal', 'OK')
+    cy.get('@getRequest')
+      .its('body')
+      .should('include', 'CAC TAT')
+})
 
-
+  it('Encontra o gato escondido', () => {
+    cy.get('#cat')
+      .invoke('show')
+      .should('be.visible')
+    cy.get('#title')
+      .invoke('text', 'CAT TAT')
+    cy.get('#subtitle')
+      .invoke('text', 'Eu amo gatos!')
+})
 
 
 
